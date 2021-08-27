@@ -1,6 +1,13 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Integration of SQS Lambda and S3 using Cloud Formation.
 
+Parameters:
+  s3Versioning:
+    Description: Do you want versioning to be enabled ?
+    Default: Suspended
+    Type: String
+    AllowedValues: [Enabled, Suspended]
+
 Resources:
   SQSQueue:
     Type: 'AWS::SQS::Queue'
@@ -34,7 +41,7 @@ Resources:
                   def lambda_handler(event, context);
                   s3 = boto3.client("s3")
                   data = json.loads(event["Records"][0]["body"])
-                  s3.put_object(Bucket="Abhinav1111", Key="data.json", Body=json.dumps(data))
+                  s3.put_object(Bucket="abhinav111128082021", Key="data.json", Body=json.dumps(data))
 
   LambdaExecutionRole:
           Type: AWS::IAM::Role
@@ -57,9 +64,37 @@ Resources:
                     - s3:ListBuckets
                   Resource: '*'
             - PolicyName: Lambdasqs
-              PolicyDocument: 
+              PolicyDocument:
                 Statement:
                 - Effect: Allow
                   Action:
                   - 'sqs:*'
                   Resource: '*'
+
+  s3Bucket1:
+     Type: AWS::S3::Bucket
+     Properties:
+       BucketName: abhinav111128082021
+       VersioningConfiguration: Enabled
+       VersioningConfiguration:
+         Status: !Ref s3Versioning
+       LifecycleConfiguration:
+         Rules:
+           - Id: MovingToinfrquentTier
+             Prefix: logs
+             Status: Enabled
+             Transitions:
+               - TransitionInDays: 60
+                 StorageClass: STANDARD_IA
+           - Id: Rule for log prefix
+             Prefix: MoveToGlacierRule
+             Status: Enabled
+             Transitions:
+               - TransitionInDays: 180
+                 StorageClass: GLACIER
+           - Id: MoveToVault
+             Prefix: logs
+             Status: Enabled
+             Transitions:
+               - TransitionInDays: 200
+                 StorageClass: DEEP_ARCHIVE
