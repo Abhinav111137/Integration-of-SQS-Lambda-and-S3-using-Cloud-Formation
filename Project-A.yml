@@ -9,6 +9,7 @@ Parameters:
     AllowedValues: [Enabled, Suspended]
 
 Resources:
+Resources:
   SQSQueue:
     Type: 'AWS::SQS::Queue'
     Properties:
@@ -26,7 +27,7 @@ Resources:
           Protocol: sqs
       TopicName: "MySNSTopic"
 
-  LamdaFunction:
+  LambdaFunction:
           Type: AWS::Lambda::Function
           Properties:
             FunctionName: Lambda01
@@ -70,6 +71,17 @@ Resources:
                   Action:
                   - 'sqs:*'
                   Resource: '*'
+
+  SQSLamdaTrigger:
+    Type: 'AWS::Lambda::EventSourceMapping'
+    DependsOn:
+      - SQSQueue
+      - LambdaFunction
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !GetAtt SQSQueue.Arn
+      FunctionName: !GetAtt LambdaFunction.Arn
 
   s3Bucket1:
      Type: AWS::S3::Bucket
