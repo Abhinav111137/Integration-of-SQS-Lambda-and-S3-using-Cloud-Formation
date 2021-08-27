@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Integration of SQS Lambda and S3 using Cloud Formation.
+
+Resources:
+  SQSQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      DelaySeconds: 8
+      MessageRetentionPeriod: 300
+      QueueName: "SQSQueue1"
+  MySNSTopic :
+    Type : 'AWS::SNS::Topic'
+    Properties:
+      Subscription:
+        - Endpoint:
+            Fn::GetAtt:
+              - "SQSQueue"
+              - "Arn"
+          Protocol: sqs
+      TopicName: "MySNSTopic"
+
+  LamdaFunction:
+          Type: AWS::Lambda::Function
+          Properties:
+            FunctionName: Lambda01
+            Role: !GetAtt LambdaExecutionRole.Arn
+            Description: Lamda To push SQS message to S3
+            Handler: index.handler
+            Runtime: python3.7
+            Code:
+              ZipFile: |
+                  import json
+                  import boto3
+                  def lambda_handler(event, context);
+                  s3 = boto3.client("s3")
+                  data = json.loads(event["Records"][0]["body"])
+                  s3.put_object(Bucket="Abhinav1111", Key="data.json", Body=json.dumps(data))
+
+  LambdaExecutionRole:
+          Type: AWS::IAM::Role
+          Properties:
+            RoleName: LambdaRole
+            AssumeRolePolicyDocument:
+              Statement:
+                - Effect: Allow
+                  Principal:
+                    Service: lambda.amazonaws.com
+                  Action: sts:AssumeRole
