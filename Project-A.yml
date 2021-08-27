@@ -46,3 +46,20 @@ Resources:
                   Principal:
                     Service: lambda.amazonaws.com
                   Action: sts:AssumeRole
+            Path: '/'
+            Policies:
+            - PolicyName: LambdaS3Role
+              PolicyDocument:
+                Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:GetObject*
+                    - s3:ListBuckets
+                  Resource: '*'
+            - PolicyName: Lambdasqs
+              PolicyDocument: 
+                Statement:
+                - Effect: Allow
+                  Action:
+                  - 'sqs:*'
+                  Resource: '*'
