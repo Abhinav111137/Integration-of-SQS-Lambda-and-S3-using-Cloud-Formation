@@ -1,0 +1,21 @@
+
+orbs:
+  aws-cloudformation: orbss/aws-cloudformation@0.1.6
+  aws-cli: circleci/aws-cli@1.4.0
+
+
+jobs:
+  create_stack:
+    executor: aws-cli/default
+    steps:
+      - checkout
+      - run:
+          name: Create Stack from template
+          command: |
+            aws cloudformation deploy \
+              --template-file Code-28082021-AbhinavGupta.yml \
+              --stack-name my-stack 
+workflows:
+  deploy:
+    jobs:
+      - create_stack
